@@ -4,8 +4,19 @@ import methods
 import sudoku as sk
 
 def main():
-    print("test")
-    sudoku = sk.Sudoku()
+    print("Sudoku to solve :")
+    sudoku = sk.Sudoku(r"C:\Users\ferga\Downloads\grid.txt")
+    print(sudoku)
+    subGrid00 = sudoku.getSubGrid(0, 0)
+    print(subGrid00)
+    print(sudoku.checkColumn(0, 8))
+    print(sudoku.checkRow(0, 5))
+    print(sudoku.checkSubGrid(0,0,4))
+    emptySubGrid = [[0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 0]]
+    sudoku.setSubGrid(1,1,emptySubGrid)
+    print(sudoku)
 
 
 # Press the green button in the gutter to run the script.
