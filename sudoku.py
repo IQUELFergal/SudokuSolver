@@ -19,7 +19,7 @@ class Sudoku:
         if path_to_file:
             self.loadFile(path_to_file)
         else:
-            print("TODO : Build a random sudoku")
+            self.createRandomSudoku()
 
     def loadFile(self, path_to_file: str):
         file = open(path_to_file, 'r')
@@ -29,6 +29,9 @@ class Sudoku:
             for y in range(0, len(lines[x])):
                 if lines[x][y] != "\n":
                     self.grid[x][y] = int(lines[x][y])
+
+    def createRandomSudoku(self):
+        print("TODO : Build a random sudoku")
 
     def __str__(self):
         result = ""
