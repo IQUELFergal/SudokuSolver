@@ -3,23 +3,9 @@
 import methods
 import sudoku as sk
 
-
-def init() -> int:
-    sudoku = sk.Sudoku()
-
-    matrix = sk.Sudoku(None)
-    matrix.showGrid(matrix.getM("Matrix"), "Grille")
-    matrix.showGrid(matrix.getM("M1"), "M1")
-    matrix.showGrid(matrix.getM("M2"), "M2")
-    matrix.showGrid(matrix.getM("M4"), "M4")
-    matrix.showGrid(matrix.getM("M3"), "M3")
-    matrix.showGrid(matrix.getM("M9"), "M9")
-    return 0
-
-
 def main():
     print("test")
-    init()
+    sudoku = sk.Sudoku()
 
 
 # Press the green button in the gutter to run the script.
