@@ -1,21 +1,8 @@
-import numpy as np
-
-
 class Sudoku:
 
     def __init__(self, path_to_file: str = None):
-        self.grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-        self.domain = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
+        self.grid = [[0 for x in range(9)] for y in range(9)]
+        self.domains = [[[1,2,3,4,5,6,7,8,9] for x in range(9)] for y in range(9)]
         if path_to_file:
             self.loadFile(path_to_file)
         else:
@@ -49,13 +36,16 @@ class Sudoku:
     def get(self, x: int, y: int) -> int:
         return self.grid[x][y]
 
-    def set(self, x: int, y: int, value: int):
+    def assign(self, value, x:int, y:int):
         self.grid[x][y] = value
+        self.domains[x][y] = []
+
+    def unassign(self, domain, x:int, y:int):
+        self.grid[x][y] = 0
+        self.domains[x][y] = domain
 
     def getSubGrid(self, m: int, n: int) -> list[list[int]]:
-        subGrid = [[0, 0, 0],
-                   [0, 0, 0],
-                   [0, 0, 0]]
+        subGrid = [[0 for x in range(3)] for y in range(3)]
         for x in range(0, len(subGrid)):
             for y in range(0, len(subGrid[x])):
                 subGrid[x][y] = self.grid[3 * m + x][3 * n + y]

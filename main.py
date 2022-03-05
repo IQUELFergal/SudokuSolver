@@ -1,26 +1,21 @@
 # Press Maj+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-import methods
-import sudoku as sk
+import methods as m
+import sudoku as s
+import time
 
-def main():
+def main(useAC3: bool, degH: bool):
+    start_time = time.time()
     print("Sudoku to solve :")
-    sudoku = sk.Sudoku(r"C:\Users\ferga\Downloads\grid.txt")
+    sudoku = s.Sudoku(r"C:\Users\ferga\Downloads\grid.txt")
+    #initialAssignment = m.initAssignment(sudoku)
     print(sudoku)
-    subGrid00 = sudoku.getSubGrid(0, 0)
-    print(subGrid00)
-    print(sudoku.checkColumn(0, 8))
-    print(sudoku.checkRow(0, 5))
-    print(sudoku.checkSubGrid(0,0,4))
-    emptySubGrid = [[0, 0, 0],
-                    [0, 0, 0],
-                    [0, 0, 0]]
-    sudoku.setSubGrid(1,1,emptySubGrid)
-    print(sudoku)
+    #sudoku_final = m.backtracking_search(sudoku, initialAssignment, useAC3, degH)
+    print(f"\nElapsed time : {time.time() - start_time} s")
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    main()
+    main(True, True)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
