@@ -1,86 +1,146 @@
-import sudoku as s
+import sudoku as Sudoku
 
-def initAssignment(sudoku: s):
-    assignment = {} # Dictionnaire contenant chaque valeur de la grille associée a sa position
+
+# Renvoie un dictionnaire contenant chaque valeur initiale de la grille associée à sa position
+def createStartAssignment(sudoku: Sudoku):
+    assignment = {}
     for x in range(len(sudoku.grid)):
         for y in range(len(sudoku.grid[x])):
-            if sudoku.grid[x][y] != 0:
-                assignment[(x, y)] = sudoku.grid[x][y]
+            value = sudoku.getValue(x, y)
+            if value != 0:
+                assignment[(x, y)] = value
     return assignment
 
-def backtrackingSearch(sudoku: s, initial_assignment: dict, use_ac3: bool, deg_h: bool) -> s:
-    assignment_final = recursive_backtracking(sudoku, initial_assignment, use_ac3, deg_h)
+# Renvoie le sudoku résolu
+def backtrackingSearch(sudoku: Sudoku, startAssignment: dict, useAC3: bool, useDegHeur: bool) -> Sudoku:
+    finalAssignment = recursiveBacktracking(sudoku, startAssignment, useAC3, useDegHeur)
 
-    for pos in assignment_final.keys():
-        x = pos[0]
-        y = pos[1]
-        sudoku.grid[x][y] = assignment_final.get(pos)
+    for pos in finalAssignment.keys():
+        x, y = pos[0], pos[1]
+        sudoku.grid[x][y] = finalAssignment.get(pos)
 
     return sudoku
 
-def recursive_backtracking(sudoku: s, assignment: dict, useAC3: bool, degH: bool) -> dict:
+# Renvoie un dictionnaire contenant chaque valeur de la grille associée à sa position
+def recursiveBacktracking(sudoku: Sudoku, assignment: dict, useAC3: bool, useDegHeur: bool) -> dict:
     if len(assignment) == 81:
-        print("Sudoku solved !\n")
         return assignment
 
-    # Choisit la variable avec le plus petit nombre de valeurs légales
-    positions = MRV(sudoku)
+    positionList = MRV(sudoku)
 
-    if degH:
-        if len(positions) > 1:
-            # si plusieurs variables sont choisies via le MRV on les départage avec degree heuristic
-            position = degreeHeuristic(sudoku, positions)
-        else:
-            position = positions[0]
+    # Selection de la position avec degreeHeuristic
+    if useDegHeur and len(positionList) > 1:
+        position = degreeHeuristic(sudoku, positionList)
     else:
-        position = positions[0]
+        position = positionList[0]
 
-    value = sudoku.get(position[0], position[1])
+    domain = leastConstrainingValue(sudoku, position[0], position[1])
 
-    domain = leastConstrainingValue(sudoku, value)
-
+    # Pour chaque valeur du domaine
     for value in domain:
-        if sudoku.all_constraint(position, value):
-            # les contraintes sont respectées
-            # on met à jour assignement
+        # Si la valeur testée respecte les contraintes du sudoku
+        if sudoku.checkConstraints(value, position[0], position[1]):
+            # On met à jour le sudoku en lui assignant la valeur testée
             assignment[(position[0], position[1])] = value
-            #assign(sudoku, position, value)
+            sudoku.assign(value, position[0], position[1])
 
             # AC3
             if useAC3:
                 AC3(sudoku)
 
-            # on applique la récursivité
-            result = recursive_backtracking(sudoku, assignment, useAC3, degH)
+            # Recursivité
+            result = recursiveBacktracking(sudoku, assignment, useAC3, useDegHeur)
+
             if result != {}:
                 return result
 
-            # on remet tout comme avant
+            # Reset des valeurs
             del assignment[(position[0], position[1])]
-            #unassign(sudoku, position, domain)
+            sudoku.unassign(domain, position[0], position[1])
 
     return {}
 
-def MRV(sudoku: s) -> list:
+
+def MRV(sudoku: Sudoku) -> list:
     domain = 10
-    position = []
+    positionList = []
     for x in range(len(sudoku.grid)):
         for y in range(len(sudoku.grid[x])):
-            val = sudoku.get(x, y)
+            val = sudoku.getValue(x, y)
             if val == 0:
-                domainLength = len(s.grid.domains[x][y])
+                domainLength = len(sudoku.domains[x][y])
                 if domainLength == domain:
-                    position.append((x,y))
+                    positionList.append((x, y))
                 else:
                     domain = domainLength
-                    position = [val.position]
+                    positionList = [(x, y)]
+
+    return positionList
 
 
-def AC3(sudoku: s) -> None:
-    print("AC3")
+# Retourne la position avec le plus de contraintes
+def degreeHeuristic(sudoku: Sudoku, positions: list) -> tuple:
+    maxConstraints = -1
+    positionOfMaxConstraints = (-1, -1)
+    for position in positions:
+        x, y = position[0], position[1]
+        constraints = len(sudoku.getUnassignedNeighborPos(x, y))
+        if constraints > maxConstraints:
+            maxConstraints = constraints
+            positionOfMaxConstraints = (x, y)
+    return positionOfMaxConstraints
 
-def degreeHeuristic(sudoku: s, positions: list) -> list:
-    print("degH")
 
-def leastConstrainingValue(sudoku: s) -> list:
-    print("leastConstrainingValue")
+def AC3(sudoku: Sudoku):
+    queue = []
+    for x in range(len(sudoku.grid)):
+        for y in range(len(sudoku.grid[x])):
+            val = sudoku.getValue(x, y)
+            if val == 0:
+                unassignedNeighborPosList = sudoku.getUnassignedNeighborPos(x, y)
+                for neighborPos in unassignedNeighborPosList:
+                    queue.append([(x, y), neighborPos])
+    while len(queue):
+        [xi, xj] = queue.pop()
+        if removeInconsistentValues(sudoku, xi, xj):
+            unassignedNeighborPosList = sudoku.getUnassignedNeighborPos(xi[0], xi[1])
+            for xk in unassignedNeighborPosList:
+                queue.append([xk, xi])
+
+
+def removeInconsistentValues(sudoku: Sudoku, xi: tuple, xj: tuple) -> bool:
+    remove = False
+    xiDomain = sudoku.getDomain(xi[0], xi[1])
+    xjDomain = sudoku.getDomain(xj[0], xj[1])
+
+    for value in xiDomain:
+        if len(xjDomain) > 0:
+            if not any([value != n for n in xjDomain]):
+                sudoku.removeFromDomain(value, xi[0], xi[1])
+                remove = True
+
+            return remove
+
+
+def leastConstrainingValue(sudoku: Sudoku, x: int, y: int) -> list:
+    neighborPosList = sudoku.getUnassignedNeighborPos(x, y)
+    domain = sudoku.getDomain(x, y)
+    orderedValues = []
+    constraintsCount = {}
+
+    # Association de son nombre de voisins à chaque valeur possible du domaine
+    for value in domain:
+        count = 0
+        for neighborPos in neighborPosList:
+            neighborDomain = sudoku.getDomain(neighborPos[0], neighborPos[1])
+            if value in neighborDomain:
+                count += 1
+        constraintsCount[value] = count
+
+    # Transformation du dictionnaire en liste triée de position
+    sortedDict = sorted(constraintsCount.items(), key=lambda n: n[1])
+
+    # Création de la liste finale des valeurs à tester
+    for i in range(len(sortedDict)):
+        orderedValues.append(sortedDict[i][0])
+    return orderedValues

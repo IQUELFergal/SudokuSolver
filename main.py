@@ -1,21 +1,19 @@
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import methods as m
 import sudoku as s
 import time
 
-def main(useAC3: bool, degH: bool):
+
+def main(useAC3: bool, useDegHeur: bool, sudokuPath):
     start_time = time.time()
     print("Sudoku to solve :")
-    sudoku = s.Sudoku(r"C:\Users\ferga\Downloads\grid.txt")
-    #initialAssignment = m.initAssignment(sudoku)
+    sudoku = s.Sudoku(sudokuPath)
     print(sudoku)
-    #sudoku_final = m.backtracking_search(sudoku, initialAssignment, useAC3, degH)
+    startAssignment = m.createStartAssignment(sudoku)
+    print("Solving...\n")
+    solvedSudoku = m.backtrackingSearch(sudoku, startAssignment, useAC3, useDegHeur)
+    print("Solved sudoku :\n" + str(solvedSudoku))
     print(f"\nElapsed time : {time.time() - start_time} s")
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    main(True, True)
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main(True, True, r"C:\Users\ferga\Downloads\grid.txt")
