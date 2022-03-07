@@ -1,7 +1,7 @@
 import methods as m
 import sudoku as s
 import time
-
+import sys
 
 def main(useAC3: bool, useDegHeur: bool, sudokuPath):
     start_time = time.time()
@@ -16,4 +16,6 @@ def main(useAC3: bool, useDegHeur: bool, sudokuPath):
 
 
 if __name__ == '__main__':
-    main(True, True, r"C:\Users\ferga\Downloads\grid.txt")
+    list_arg = sys.argv
+    print(sys.argv[0])
+    main(bool(sys.argv[1]), bool(sys.argv[2]), sys.argv[3])
