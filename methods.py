@@ -23,63 +23,67 @@ def backtrackingSearch(sudoku: Sudoku, startAssignment: dict, useAC3: bool, useD
 
 # Renvoie un dictionnaire contenant chaque valeur de la grille associée à sa position
 def recursiveBacktracking(sudoku: Sudoku, assignment: dict, useAC3: bool, useDegHeur: bool) -> dict:
+    # Condition d'arrêt de la récursivité
     if len(assignment) == 81:
         return assignment
 
     positionList = MRV(sudoku)
 
-    # Selection de la position avec degreeHeuristic
+    # Selection de la position à utiliser avec degreeHeuristic
     if useDegHeur and len(positionList) > 1:
         position = degreeHeuristic(sudoku, positionList)
     else:
         position = positionList[0]
 
-    domain = leastConstrainingValue(sudoku, position[0], position[1])
+    domain = sudoku.getDomain(position[0], position[1])
 
-    # Pour chaque valeur du domaine
+    # Pour chaque valeur du domaine,
     for value in domain:
-        # Si la valeur testée respecte les contraintes du sudoku
+        # Si la valeur testée respecte les contraintes du sudoku,
         if sudoku.checkConstraints(value, position[0], position[1]):
             # On met à jour le sudoku en lui assignant la valeur testée
             assignment[(position[0], position[1])] = value
             sudoku.assign(value, position[0], position[1])
 
-            # AC3
+            # AC3 supprime les valeurs inconsistantes
             if useAC3:
                 AC3(sudoku)
 
-            # Recursivité
+            # Appel récursif
             result = recursiveBacktracking(sudoku, assignment, useAC3, useDegHeur)
-
             if result != {}:
                 return result
 
             # Reset des valeurs
             del assignment[(position[0], position[1])]
             sudoku.unassign(domain, position[0], position[1])
-
+    # Echec
     return {}
 
 
 def MRV(sudoku: Sudoku) -> list:
-    domain = 10
+    minDomainLength = 10
     positionList = []
     for x in range(len(sudoku.grid)):
         for y in range(len(sudoku.grid[x])):
             val = sudoku.getValue(x, y)
+            # Si la variable n'est pas assignée
             if val == 0:
+                # On calcule la longueur de son domaine
                 domainLength = len(sudoku.domains[x][y])
-                if domainLength == domain:
-                    positionList.append((x, y))
-                else:
-                    domain = domainLength
+                # On compare la longueur obtenue avec la longueur minimale actuelle
+                if domainLength < minDomainLength:
+                    minDomainLength = domainLength
                     positionList = [(x, y)]
+                elif domainLength == minDomainLength:
+                    positionList.append((x, y))
+
 
     return positionList
 
 
 # Retourne la position avec le plus de contraintes
-def degreeHeuristic(sudoku: Sudoku, positions: list) -> tuple:
+def degreeHeuristic(sudoku: Sudoku, positions: list[tuple[int, int]]) -> tuple:
     maxConstraints = -1
     positionOfMaxConstraints = (-1, -1)
     for position in positions:
@@ -120,27 +124,3 @@ def removeInconsistentValues(sudoku: Sudoku, xi: tuple, xj: tuple) -> bool:
                 remove = True
 
             return remove
-
-
-def leastConstrainingValue(sudoku: Sudoku, x: int, y: int) -> list:
-    neighborPosList = sudoku.getUnassignedNeighborPos(x, y)
-    domain = sudoku.getDomain(x, y)
-    orderedValues = []
-    constraintsCount = {}
-
-    # Association de son nombre de voisins à chaque valeur possible du domaine
-    for value in domain:
-        count = 0
-        for neighborPos in neighborPosList:
-            neighborDomain = sudoku.getDomain(neighborPos[0], neighborPos[1])
-            if value in neighborDomain:
-                count += 1
-        constraintsCount[value] = count
-
-    # Transformation du dictionnaire en liste triée de position
-    sortedDict = sorted(constraintsCount.items(), key=lambda n: n[1])
-
-    # Création de la liste finale des valeurs à tester
-    for i in range(len(sortedDict)):
-        orderedValues.append(sortedDict[i][0])
-    return orderedValues

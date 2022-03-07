@@ -108,16 +108,16 @@ class Sudoku:
     def checkConstraints(self, value: int, x: int, y: int) -> bool:
         return self.checkColumn(value, x, y) and self.checkRow(value, x, y) and self.checkSubGrid(value, x, y)
 
-    # Renvoie True si la colonne ne contient pas deja value à un autre emplacement, sinon retourne False
+    # Renvoie True si la ligne ne contient pas deja value à un autre emplacement, sinon retourne False
     def checkRow(self, value: int, x: int, y: int) -> bool:
-        for i in range(len(self.grid[y])):
+        for i in range(len(self.grid)):
             if self.getValue(i, y) == value and i != x:
                 return False
         return True
 
-    # Renvoie True si la ligne ne contient pas value à un autre emplacement, sinon retourne False
+    # Renvoie True si la colonne ne contient pas value à un autre emplacement, sinon retourne False
     def checkColumn(self, value: int, x: int, y: int) -> bool:
-        for i in range(len(self.grid)):
+        for i in range(len(self.grid[x])):
             if self.getValue(x, i) == value and i != y:
                 return False
         return True
