@@ -1,4 +1,5 @@
-from typing import Tuple
+import os
+import random
 
 
 class Sudoku:
@@ -7,8 +8,15 @@ class Sudoku:
     def __init__(self, filePath: str = None):
         self.grid = [[0 for x in range(9)] for y in range(9)]
         self.domains = [[[1, 2, 3, 4, 5, 6, 7, 8, 9] for x in range(9)] for y in range(9)]
-        if filePath:
+        if filePath == "random":
+            self.createRandomSudokuGrid()
+        elif os.path.exists(filePath):
             self.loadFile(filePath)
+        else:
+            try:
+                raise Exception("Error: No such file or directory :", filePath)
+            finally:
+                print("Error: No such file or directory :", filePath)
 
     # Initialise le sudoku grace au fichier dont l'adresse est fournie
     def loadFile(self, filePath: str) -> None:
@@ -20,6 +28,109 @@ class Sudoku:
                 if lines[x][y] != "\n":
                     self.assign(int(lines[y][x]), x, y)
 
+    def createRandomSudokuGrid(self):
+        print("Generating random sudoku grid")
+        solvedGrids = [[[7, 9, 6, 2, 4, 5, 3, 1, 8],
+                        [1, 5, 4, 7, 3, 8, 9, 2, 6],
+                        [8, 2, 3, 6, 1, 9, 7, 4, 5],
+                        [9, 6, 7, 1, 8, 4, 5, 3, 2],
+                        [2, 3, 1, 9, 5, 7, 6, 8, 4],
+                        [5, 4, 8, 3, 2, 6, 1, 9, 7],
+                        [4, 8, 9, 5, 7, 3, 2, 6, 1],
+                        [6, 1, 5, 8, 9, 2, 4, 7, 3],
+                        [3, 7, 2, 4, 6, 1, 8, 5, 9]],
+
+                       [[4, 8, 3, 9, 2, 1, 6, 5, 7],
+                        [9, 6, 7, 3, 4, 5, 8, 2, 1],
+                        [2, 5, 1, 8, 7, 6, 4, 9, 3],
+                        [5, 4, 8, 1, 3, 2, 9, 7, 6],
+                        [7, 2, 9, 5, 6, 4, 1, 3, 8],
+                        [1, 3, 6, 7, 9, 8, 2, 4, 5],
+                        [3, 7, 2, 6, 8, 9, 5, 1, 4],
+                        [8, 1, 4, 2, 5, 3, 7, 6, 9],
+                        [6, 9, 5, 4, 1, 7, 3, 8, 2]],
+
+                       [[8, 4, 7, 9, 1, 5, 3, 2, 6],
+                        [1, 9, 6, 8, 2, 3, 4, 7, 5],
+                        [5, 2, 3, 4, 6, 7, 9, 1, 8],
+                        [7, 1, 4, 6, 5, 9, 2, 8, 3],
+                        [9, 8, 5, 3, 7, 2, 1, 6, 4],
+                        [6, 3, 2, 1, 8, 4, 7, 5, 9],
+                        [4, 7, 8, 2, 9, 6, 5, 3, 1],
+                        [2, 6, 9, 5, 3, 1, 8, 4, 7],
+                        [3, 5, 1, 7, 4, 8, 6, 9, 2]],
+
+                       [[2, 7, 1, 6, 4, 9, 3, 8, 5],
+                        [5, 3, 9, 8, 2, 1, 6, 4, 7],
+                        [4, 6, 8, 5, 3, 7, 1, 2, 9],
+                        [1, 5, 3, 4, 7, 8, 9, 6, 2],
+                        [7, 8, 6, 2, 9, 3, 4, 5, 1],
+                        [9, 4, 2, 1, 6, 5, 7, 3, 8],
+                        [3, 1, 5, 9, 8, 6, 2, 7, 4],
+                        [8, 2, 7, 3, 1, 4, 5, 9, 6],
+                        [6, 9, 4, 7, 5, 2, 8, 1, 3]]]
+
+        randomGrid = solvedGrids[random.randint(0, len(solvedGrids) - 1)]
+
+        # On inverse des lignes de 3*9 cases
+        shuffleCountHorizontally = random.randint(5, 20)
+        for i in range(shuffleCountHorizontally):
+            firstRowIndexToShuffle = random.randint(0, 2)
+            secondRowIndexToShuffle = random.randint(0, 2)
+            if firstRowIndexToShuffle != secondRowIndexToShuffle:
+                # On sauvegarde la 2nd ligne
+                secondRow = [[0 for x in range(9)] for y in range(3)]
+                for y in range(3):
+                    for x in range(9):
+                        secondRow[y][x] = randomGrid[secondRowIndexToShuffle * 3 + y][x]
+                # On copie la 1ere line sur la 2nd ligne
+                for y in range(3):
+                    for x in range(9):
+                        randomGrid[secondRowIndexToShuffle * 3 + y][x] = randomGrid[firstRowIndexToShuffle * 3 + y][x]
+                # On copie la sauvegarde de la 2nd ligne sur la 1ere ligne
+                for y in range(3):
+                    for x in range(9):
+                        randomGrid[firstRowIndexToShuffle * 3 + y][x] = secondRow[y][x]
+
+        shuffleCountVertically = random.randint(5, 20)
+        for i in range(shuffleCountVertically):
+            firstColumnIndexToShuffle = random.randint(0, 2)
+            secondColumnIndexToShuffle = random.randint(0, 2)
+            if firstColumnIndexToShuffle != secondColumnIndexToShuffle:
+                secondColumn = [[0 for x in range(3)] for y in range(9)]
+                # On sauvegarde la 2nd row
+                secondRow = [[0 for x in range(3)] for y in range(9)]
+                for y in range(3):
+                    for x in range(9):
+                        secondRow[x][y] = randomGrid[x][secondColumnIndexToShuffle * 3 + y]
+                # On copie le 1er row sur le 2nd row
+                for y in range(3):
+                    for x in range(9):
+                        randomGrid[x][secondColumnIndexToShuffle * 3 + y] = randomGrid[x][
+                            firstColumnIndexToShuffle * 3 + y]
+                # On copie la sauvegarde du 2nd row sur le 1er row
+                for y in range(3):
+                    for x in range(9):
+                        randomGrid[x][firstColumnIndexToShuffle * 3 + y] = secondRow[x][y]
+
+        # On enleve des valeurs aleatoirement
+        removeCount = random.randint(20, 40)
+        removedPosList =[]
+        while len(removedPosList) < removeCount:
+            x, y = random.randint(0, 8), random.randint(0, 8)
+            if (x, y) not in removedPosList:
+                removedPosList.append((x, y))
+                randomGrid[x][y] = 0
+
+        # On transpose la matrice si flip est vrai
+        flip = bool(random.randint(0, 1))
+        for x in range(len(self.grid)):
+            for y in range(len(self.grid[x])):
+                if flip:
+                    self.assign(randomGrid[x][y], x, y)
+                else:
+                    self.assign(randomGrid[y][x], x, y)
+
     # Transforme le sudoku est string pour l'afficher
     def __str__(self):
         result = ""
@@ -27,11 +138,12 @@ class Sudoku:
             line = ""
             for y in range(len(self.grid[x])):
                 line += str(self.grid[y][x])
+                line += " "
                 if y in [2, 5]:
-                    line += "|"
+                    line += "| "
             result += (line + "\n")
             if x in [2, 5]:
-                result += ("---+---+---" + "\n")
+                result += ("------+-------+------" + "\n")
         return result
 
     # Renvoie la valeur de la variable à la position donnée
